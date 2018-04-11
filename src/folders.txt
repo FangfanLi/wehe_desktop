@@ -1,0 +1,15 @@
+/home/ubuntu/replayTraces/AmazonVideo_Aug8
+/home/ubuntu/replayTraces/AmazonVideoRandom_Aug8
+/home/ubuntu/replayTraces/NBCSports
+/home/ubuntu/replayTraces/NBCSportsRandom
+/home/ubuntu/replayTraces/NBCSportsRandom_H
+/home/ubuntu/replayTraces/SkypeUDP
+/home/ubuntu/replayTraces/SkypeUDPRandom
+/home/ubuntu/replayTraces/Spotify
+/home/ubuntu/replayTraces/SpotifyRandom
+/home/ubuntu/replayTraces/Vimeo
+/home/ubuntu/replayTraces/VimeoRandom
+/home/ubuntu/replayTraces/Youtube
+/home/ubuntu/replayTraces/YoutubeRandom
+/home/ubuntu/replayTraces/Netflix_Sep22
+/home/ubuntu/replayTraces/NetflixRandom_Sep22
