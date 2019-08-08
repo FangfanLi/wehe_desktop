@@ -29,6 +29,16 @@ import matplotlib.pyplot as plt
 import testHypothesis as TH
 
 DEBUG = 0
+# elogger = logging.getLogger('errorLogger')
+
+# def convertDate(date):
+#     '''
+#     converts '%Y-%b-%d-%H-%M-%S' to '%Y-%m-%d %H:%M:%S'
+#     '''
+#
+#     date = datetime.datetime.strptime(date, "%Y-%b-%d-%H-%M-%S")
+#     date = date.strftime('%Y-%m-%d %H:%M:%S')
+#     return date
 
 class ResultObj(object):
     def __init__(self, userID, historyCount, testID, replayName, extraString, date=None):
@@ -69,37 +79,40 @@ def finalAnalyzer(userID, historyCount, testID, path, xputBuckets, alpha, side='
     if side == 'Client':
         folder          = path + '/' + userID + '/clientXputs/'
         regexOriginal   = '*_' + str(historyCount) + '_' + str(0) + '.json'
-        regexControl    = '*_' + str(historyCount) + '_' + str(testID) + '.json'
+        regexRandom    = '*_' + str(historyCount) + '_' + str(testID) + '.json'
         fileOriginal    = glob.glob(folder+regexOriginal)
-        fileControl     = glob.glob(folder+regexControl)
+        fileRandom     = glob.glob(folder+regexRandom)
         try:
             (xputO, durO) = json.load(open(fileOriginal[0], 'r'))
-            (xputC, durC) = json.load(open(fileControl[0], 'r'))
+            (xputR, durR) = json.load(open(fileRandom[0], 'r'))
         except Exception as e:
             # elogger.error('FAIL at loading the client xputs', e)
-            print 'FAIL at loading the client xputs', e
+            print 'FAIL at loading client side throughputs', e
             return None
+    # Do server side analysis
+    # After the analysis is done, scp the pcap file back to achtung immediately
+    # KNOWN ISSUE: sometimes the pcap file does not get scp/rm
+    # --- Temporal Solution: run dataCleaning.py periodically on the server to backup data as well as pcaps that are left on the replay servers
     else:
         try:
             dumpDir          = path + '/' + userID + '/tcpdumpsResults/'
-            regexControl     = '*_' + str(historyCount) + '_' + str(testID) + '_out.pcap'
-            regexOriginal   = '*_' + str(historyCount) + '_' + str(0) + '_out.pcap'
-            fileControl      = glob.glob(dumpDir + regexControl)
+            regexRandom     = '*_' + str(historyCount) + '_' + str(testID) + '.pcap'
+            regexOriginal   = '*_' + str(historyCount) + '_' + str(0) + '.pcap'
+            fileRandom      = glob.glob(dumpDir + regexRandom)
             fileOriginal    = glob.glob(dumpDir + regexOriginal)
-            # print '\r\n TWO FILES ARE', fileControl[0], fileOriginal[0]
             (xputO, durO) = TH.adjustedXput(fileOriginal[0], xputBuckets)
-            (xputC, durC) = TH.adjustedXput(fileControl[0], xputBuckets)
+            (xputR, durR) = TH.adjustedXput(fileRandom[0], xputBuckets)
         except Exception as e:
             traceback.print_exc(file=sys.stdout)
-            # elogger.error('FAIL at cleaning up the pcaps for {} {} {}'.format(userID, historyCount, testID))
-            print 'FAIL at getting server side throughputs ', e
+            print 'FAIL at loading server side throughputs', e
             return None
 
-
-    # resultObj = ResultObj(realID, historyCount, testID, replayName, extraString, date=incomingTime)
     try:
        resultFile = (path + '/' + userID + '/decisions/'+'results_{}_{}_{}_{}.json').format(userID, side, historyCount, testID)
-       forPlot, results        = testIt(xputO, xputC, resultFile, xputBuckets, alpha)
+       xputO = [x for x in xputO if x > 0]
+       xputR = [x for x in xputR if x > 0]
+       # Only use none-zero throughputs for test
+       forPlot, results        = testIt(xputO, xputR, resultFile, alpha)
     except Exception as e:
         # elogger.error('FAIL at testing the result for '.format(userID, historyCount, testID))
         print 'FAIL at loading result', e
@@ -150,19 +163,19 @@ def plotCDFs(xLists, outfile):
     plt.ylabel('CDF')
     plt.savefig(outfile)
 
-def testIt(xputO, xputC, resultFile, xputBuckets, alpha, doRTT=True):
+def testIt(xputO, xputR, resultFile, alpha, doRTT=True):
     forPlot         = {}
 
     if os.path.isfile(resultFile):
         results = json.load(open(resultFile, 'r'))
     else:
         # print '\r\n CREATING RESULT FILE',resultFile
-        results = TH.doTests(xputO, xputC, alpha)
+        results = TH.doTests(xputO, xputR, alpha)
         # print '\r\n RESULTS FROM DOTESTS',results
         json.dump(results, open(resultFile, 'w'))
 
-    forPlot['Exposed'] = xputO
-    forPlot['Hidden'] = xputC
+    forPlot['Original'] = xputO
+    forPlot['Random'] = xputR
 
 
     areaTest = results[0]
@@ -204,4 +217,3 @@ def parseTsharkTransferOutput(output):
     y = map(lambda z: z/1000000.0, y)
     
     return x, y 
-

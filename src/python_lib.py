@@ -540,7 +540,7 @@ class Configs(object):
         if len(key) > self._maxlen:
             self._maxlen = len(key)
     def show(self, key):
-        print key , ':\t', value
+        print key , ':\t'
     def show_all(self):
         for key in sorted(self._configs):
             print '\t', key.ljust(self._maxlen) , ':', self._configs[key]
@@ -558,10 +558,8 @@ class Instance(object):
     def __init__(self):
         self.ips = {
                     'yourInstanceName'    : 'yourInstanceAddress',
-                    'wehe' : 'wehe2.meddle.mobi',
+                    'wehe': 'wehe2.meddle.mobi',
                     'local'               : 'localhost',
-                    'example1'            : 'my.example1.com',
-                    'example2'            : '1.2.3.4',
                    }
     def getIP(self, machineName):
         ip = socket.gethostbyname( self.ips[machineName] )
@@ -578,29 +576,23 @@ def getSystemStat():
 
     return cpuPercent, memPercent, diskPercent, upLoad
 
-def clean_pcap(in_pcap, port_list, clientException, hostList=[]):
+def clean_pcap(in_pcap, port_list):
 
     out_pcap = in_pcap.replace('.pcap', '_out.pcap')
 
     # If no contentmodification, we store only packet headers
     # generate an intermidiate pcap file with packets truncated to 96 bytes each
     # Use this new intermidiate pcap as in_pcap
-    if 'ContentModification' != clientException:
-        interm_pcap = in_pcap.replace('.pcap', '_interm.pcap')
-        tcommand = ['editcap', '-s', '96', in_pcap, interm_pcap]
-        p = subprocess.call(tcommand, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        commandrm = ['sudo', 'rm', '-r', in_pcap]
-        p = subprocess.call(commandrm, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        in_pcap = interm_pcap
+    interm_pcap = in_pcap.replace('.pcap', '_interm.pcap')
+    tcommand = ['editcap', '-s', '128', in_pcap, interm_pcap]
+    p = subprocess.call(tcommand, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    commandrm = ['sudo', 'rm', '-r', in_pcap]
+    p = subprocess.call(commandrm, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    in_pcap = interm_pcap
 
     port_list = map(int, port_list) #to get rid of leading zeros
 
     filter  = 'port ' + ' or port '.join( map(str, port_list))
-
-    if len(hostList) > 0:
-        filter2 = ' and host ' + ' or host '.join( map(str, hostList))
-        filter += filter2
-
     command = ['tcpdump', '-r', in_pcap, '-w', out_pcap, filter]
 
     p = subprocess.call(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -632,7 +624,7 @@ class tcpdump(object):
 
     def start(self, host = None):
 
-        command = ['tcpdump', '-B', str(self.bufferSize), '-w', self.dump_name]
+        command = ['tcpdump', '-w', self.dump_name]
 
         if self._interface is not None:
             command += ['-i', self._interface]

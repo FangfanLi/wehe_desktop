@@ -312,6 +312,20 @@ def bitInv(hexpayload):
     newpayload = bin2str(newb)
     return newpayload.encode('hex')
 
+def bitInvNonHex(payload):
+    bpayload = str2bin(payload)
+    newb = ''
+    for char in bpayload:
+        if char == '0':
+            newb += '1'
+        else:
+            newb += '0'
+    newpayload = bin2str(newb)
+    return newpayload
+
+
+# def bitInvertByPayload(payload):
+
 def random_hex_by_payload(hexPayload):
     '''
     Takes the size of the random hex string it should generate:
@@ -323,7 +337,18 @@ def random_hex_by_payload(hexPayload):
     if Configs().get('pureRandom'):
         return random_hex_by_size( len(hexPayload) )
     elif Configs().get('invertBit'):
-        return bitInv(hexPayload)
+        payload = hexPayload.decode('hex')
+
+        if payload.startswith('GET'):
+            req = Request(payload).createBitInvertedRequestPacket()
+            return req.encode('hex')
+
+        elif payload.startswith('HTTP'):
+            res = Response(payload).createBitInvertedResponsePacket()
+            return res.encode('hex')
+
+        else:
+            return bitInv(hexPayload)
     else:
         payload = hexPayload.decode('hex')
         
@@ -357,6 +382,18 @@ class Request(object):
                       serializedHeaders + '\r\n' + '\r\n')
          
         return newRequest
+
+    def createBitInvertedRequestPacket(self):
+        serializedParams = '&'.join([k[0] + '=' + bitInvNonHex(k[1]) for k in self.params])
+        serializedHeaders = '\r\n'.join([k[0] + ': ' + bitInvNonHex(k[1]) for k in self.headers])
+
+        newRequest = (self.method + ' ' +
+                      bitInvNonHex(self.path) +
+                      '?' + serializedParams + ' ' +
+                      self.protocol + '\r\n' +
+                      serializedHeaders + '\r\n' + '\r\n')
+
+        return newRequest
     
     def __str__(self):
         return str(self.headers)
@@ -369,6 +406,9 @@ class Response(object):
  
     def createResponsePacket(self):
         return "{}\r\n{}\r\n\r\n".format(self.status, '\r\n'.join([k[0]+': '+random_ascii_by_size(len(k[1])) for k in self.headers]))
+
+    def createBitInvertedResponsePacket(self):
+        return "{}\r\n{}\r\n\r\n".format(self.status, '\r\n'.join([k[0]+': '+bitInvNonHex(k[1]) for k in self.headers]))
     
     def __str__(self):
         return str(self.headers)
@@ -660,7 +700,6 @@ def run(*args):
         for line in f:
             #0-Create packet object
             dPacket = singlePacket(line, client_ip)
-            
             #1-Do necessary checks and skip when necessary
                         
             #1a-Skip no-man's packets or unknown protocols
@@ -684,7 +723,6 @@ def run(*args):
                     continue
                 else:
                     startedStreams[dPacket.protocol].append(dPacket.stream)
-            
             #2a-For TCP, append to tcpMetas
             if dPacket.protocol == 'tcp':
                 if dPacket.NXseq == -1:
@@ -712,9 +750,7 @@ def run(*args):
                 serversTimeOrigin[dPacket.protocol][dPacket.csp] = dPacket.timestamp
             
             if configs.get('randomPayload') is True:
-#                 payload = random_hex(len(payload))
                   payload = random_hex_by_payload(payload)
-            
             if talking == 'c':
                 udpClientQ.append( UDPset(payload, dPacket.timestamp, dPacket.csp) )
             elif talking == 's':
@@ -770,7 +806,7 @@ def run(*args):
         #1- IP based filtering
         serverIP = csp[22:37]
         
-#         if serverIP in ipIgnoreList:
+        # if serverIP in ipIgnoreList:
         if isInNetworks(serverIP, ipIgnoreList):
             streamSkippedList.append(stream)
             print '\t\tIgnoring stream {}. Server IP in ignore list!'.format(csp)
@@ -846,7 +882,6 @@ def run(*args):
     PRINT_ACTION('Serializing all', 1, action=False)
     pickle.dump(streamSkippedList, open((configs.get('pcap_folder')+'/streamSkippedList.pickle'), "w" ), 2)
     pickle.dump((clientQ, udpClientPorts, list(tcpCSPs), replay_name)          , open((pcap_file+'_client_all.pickle'), "w" ), 2)
-    print '\r\n LUT', LUT
     pickle.dump((serverQ, LUT, getLUT, udpServers, tcpServerPorts, replay_name), open((pcap_file+'_server_all.pickle'), "w" ), 2)
     json.dump((clientQ, udpClientPorts, list(tcpCSPs), replay_name)            , open((pcap_file+'_client_all.json'), "w"), cls=TCP_UDPjsonEncoder)
 

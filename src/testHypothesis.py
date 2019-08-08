@@ -258,20 +258,20 @@ def sampleKS2(list1, list2, greater = True, alpha=0.95, sub=0.5, r=100):
         sub1 = random.sample( list1, int(len(list1)*sub) )
         sub2 = random.sample( list2, int(len(list2)*sub) )
         res  = ks_2samp(sub1, sub2)
-        results.append( res )
+        results.append(res)
         
         pVal = res[1]
-        if greater == True:
+        if greater:
             if pVal > (1-alpha):
                 accept += 1
         else:
             if pVal < (1-alpha):
                 accept += 1
-    
+
     dVal_avg = numpy.average([x[0] for x in results])
     pVal_avg = numpy.average([x[1] for x in results])
     
-    return [dVal_avg, pVal_avg, accept/r, results]
+    return dVal_avg, pVal_avg, accept/r, results
        
 def doTests(list1, list2, alpha=0.95):
     x1, y1 = list2CDF(list1)
