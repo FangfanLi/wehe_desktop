@@ -7,7 +7,7 @@ sleep 5
 
 cd /home/ubuntu/DD/src/
 
-screen -S analyzer -d -m sudo python replay_analyzerServerDPI.py --ConfigFile=configs.cfg --original_ports=True
+screen -S analyzer -d -m sudo python replay_analyzerServer.py --ConfigFile=configs.cfg --original_ports=True
 
 echo Started replay analyzer
 
