@@ -1209,9 +1209,9 @@ class SideChannel(object):
             uid = int(os.environ.get('SUDO_UID'))
             for root, dirs, files in os.walk(dClient.targetFolder):
                 for dir in dirs:
-                    os.chown(os.path.join(root, dir), uid)
+                    os.chown(os.path.join(root, dir), uid, -1)
                 for file in files:
-                    os.chown(os.path.join(root, file), uid)
+                    os.chown(os.path.join(root, file), uid, -1)
 
 
         return True
