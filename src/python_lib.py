@@ -586,7 +586,7 @@ def clean_pcap(in_pcap, port_list):
     interm_pcap = in_pcap.replace('.pcap', '_interm.pcap')
     tcommand = ['editcap', '-s', '128', in_pcap, interm_pcap]
     p = subprocess.call(tcommand, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    commandrm = ['sudo', 'rm', '-r', in_pcap]
+    commandrm = ['rm', '-r', in_pcap]
     p = subprocess.call(commandrm, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     in_pcap = interm_pcap
 
@@ -598,7 +598,7 @@ def clean_pcap(in_pcap, port_list):
     p = subprocess.call(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
     # Remove the original record, leave only the cleaned one
-    commandrm = ['sudo', 'rm', '-r', in_pcap]
+    commandrm = ['rm', '-r', in_pcap]
     p = subprocess.call(commandrm, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
     return ' '.join(command)

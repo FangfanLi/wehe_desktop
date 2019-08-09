@@ -50,13 +50,13 @@ python replay_client.py --pcap_folder=the/dir/to/pcap --serverInstance=replay-te
 ## Containerization
 
 This API has been containerized. To run it within a container first go to the cloned directory and build with 
-```bash
-docker build . -t wehe
+```
+sudo docker build . -t wehe
 ```
 
 Then run with 
-```bash
-docker run -v <absolute path to directery containing trace pickles>:/pickles --net=host -itd wehe
+```
+sudo docker run -v /data/RecordReplay:<where/you/want/to/save/the/output> --env SUDO_UID=$UID --net=host -itd wehe
 ```
 
 Remove d from `-itd` to run outside of detached mode and see the output in STDOUT
