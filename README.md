@@ -56,7 +56,7 @@ sudo docker build . -t wehe
 
 Then run with 
 ```
-sudo docker run -v /data/RecordReplay:<where/you/want/to/save/the/output> --env SUDO_UID=$UID --net=host -itd wehe
+sudo docker run -v <where/to/save/the/output/on/host>:/data/RecordReplay --env SUDO_UID=$UID --net=host -itd wehe
 ```
 
 Remove d from `-itd` to run outside of detached mode and see the output in STDOUT
