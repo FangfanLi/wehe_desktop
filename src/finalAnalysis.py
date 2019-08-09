@@ -20,12 +20,9 @@ limitations under the License.
 '''
 
 import subprocess, numpy, datetime,json,logging, traceback
-import matplotlib
 import copy
-matplotlib.use('Agg')
 import sys, glob, pickle, os, time
 sys.path.append('testHypothesis')
-import matplotlib.pyplot as plt
 import testHypothesis as TH
 
 DEBUG = 0
@@ -96,8 +93,8 @@ def finalAnalyzer(userID, historyCount, testID, path, xputBuckets, alpha, side='
     else:
         try:
             dumpDir          = path + '/' + userID + '/tcpdumpsResults/'
-            regexRandom     = '*_' + str(historyCount) + '_' + str(testID) + '.pcap'
-            regexOriginal   = '*_' + str(historyCount) + '_' + str(0) + '.pcap'
+            regexRandom     = '*_' + str(historyCount) + '_' + str(testID) + '*.pcap'
+            regexOriginal   = '*_' + str(historyCount) + '_' + str(0) + '*.pcap'
             fileRandom      = glob.glob(dumpDir + regexRandom)
             fileOriginal    = glob.glob(dumpDir + regexOriginal)
             (xputO, durO) = TH.adjustedXput(fileOriginal[0], xputBuckets)
@@ -127,41 +124,8 @@ def finalAnalyzer(userID, historyCount, testID, path, xputBuckets, alpha, side='
     resultObj.ks2dVal = results['ks2dVal']
     resultObj.ks2pVal   = results['ks2pVal']
 
-    plotFile = path + '/' + userID + '/plots/xput_{}_{}_{}_{}_{}_{}_{}_{}.png'.\
-        format(userID, side, replayName, historyCount, testID, results['areaTest'], results['ks2dVal'], results['ks2pVal'])
-
-    try:
-        plotCDFs(forPlot, plotFile)
-    except Exception as e:
-        # elogger.error('Error when plotting CDF', userID, historyCount, testID)
-        print 'FAIL at plotting', e
 
     return resultObj
-
-def plotCDFs(xLists, outfile):
-    colors = ['r', 'b', 'g', 'b']
-    plt.clf()
-
-    i      = -1
-    j      = 0
-    for traceName in xLists.keys():
-        i       += 1
-        j       += 3
-        x, y     = TH.list2CDF(xLists[traceName])
-        plt.plot(x, y, '-', color=colors[i%len(colors)], linewidth=2, label=traceName)
-
-    plt.ylim((0, 1.1))
-
-    plt.axvline([1.6], linewidth=5, alpha=0.3)
-    plt.axhline([0.5], linewidth=5, alpha=0.3)
-    
-
-    plt.legend(loc='best', prop={'size':8})
-    plt.grid()
-    plt.title( outfile.rpartition('/')[2] )
-    plt.xlabel('Xput (Mbits/sec)')
-    plt.ylabel('CDF')
-    plt.savefig(outfile)
 
 def testIt(xputO, xputR, resultFile, alpha, doRTT=True):
     forPlot         = {}

@@ -12,8 +12,9 @@ RUN apk add --no-cache gcc \
 		build-base \
 		openblas-dev \
 		libgfortran \
-		tcpdump
-RUN pip install --no-cache matplotlib
+		tcpdump \
+		wireshark \
+		tshark
 RUN pip install --no-cache psutil
 RUN pip install --no-cache mysqlclient
 RUN pip install --no-cache tornado==4.2
@@ -23,11 +24,13 @@ RUN pip install --no-cache future
 RUN pip install --no-cache timezonefinder==1.5.3
 RUN pip install --no-cache gevent
 RUN pip install --no-cache reverse-geocode
+RUN pip install --no-cache python-dateutil
+RUN pip install --no-cache prometheus_client
 RUN apk del --purge gcc \
                 libc-dev \
                 linux-headers \
 		build-base
 ADD src /wehe
-ADD data /data
+ADD replayTraces /replayTraces
 WORKDIR /wehe
-CMD python replay_analyzerServerDPI.py --ConfigFile=configs.cfg --original_ports=True & python replay_server.py --ConfigFile=configs.cfg --original_ports=True
+CMD python replay_analyzerServer.py --ConfigFile=configs.cfg --original_ports=True & python replay_server.py --ConfigFile=configs.cfg --original_ports=True

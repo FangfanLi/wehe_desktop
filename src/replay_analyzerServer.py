@@ -893,14 +893,16 @@ def main():
 
     # first db connection sometimes fails
     attempts = 1
-    maxAttempts = 10
+    maxAttempts = 5
     while attempts < maxAttempts:
         try:
             db = DB.DB()
         except Exception as e:
             LOG_ACTION(logger, 'Failed to connect to the database, retrying...')
             if attempts == maxAttempts - 1:
-                raise e
+                LOG_ACTION(logger, 'Failed to connect to the database after {} tries, run without db'.format(maxAttempts))
+                db = None
+                # raise e
             attempts += 1
             time.sleep(0.5 * attempts)
         else:

@@ -18,13 +18,10 @@ limitations under the License.
 #######################################################################################################
 #######################################################################################################
 '''
-import matplotlib
-matplotlib.use('Agg')
 import sys
 sys.path.append('..')
 import subprocess, random, numpy
 from python_lib import *
-import matplotlib.pyplot as plt
 import scipy.stats
 from scipy.stats import ks_2samp
 from scipy import interpolate, integrate

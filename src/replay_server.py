@@ -607,10 +607,6 @@ class SideChannel(object):
         self.max_time = 5 * 60
         self.admissionCtrl = {}  # self.admissionCtrl[id][replayName] = testObj
         self.inProgress = {}  # self.inProgress[realID] = (id, replayName)
-        if Configs().get('EC2'):
-            self.instanceID = self.getEC2instanceID()
-        else:
-            self.instanceID = 'NonEC2'
 
     def run(self, server_mapping, mappings):
         '''
@@ -1063,12 +1059,6 @@ class SideChannel(object):
 
         return carrierName
 
-    def getEC2instanceID(self):
-        try:
-            return urllib2.urlopen('http://169.254.169.254/latest/meta-data/instance-id').read()
-        except:
-            return None
-
     def killIfNeeded(self, realID):
         try:
             tmpG = self.id2g[realID]
@@ -1217,12 +1207,11 @@ class SideChannel(object):
             # recursively change the dClient results' ownership from root to user
             # makes it easier to delete after data is backed up
             uid = int(os.environ.get('SUDO_UID'))
-            gid = int(os.environ.get('SUDO_GID'))
             for root, dirs, files in os.walk(dClient.targetFolder):
                 for dir in dirs:
-                    os.chown(os.path.join(root, dir), uid, gid)
+                    os.chown(os.path.join(root, dir), uid)
                 for file in files:
-                    os.chown(os.path.join(root, file), uid, gid)
+                    os.chown(os.path.join(root, file), uid)
 
 
         return True
