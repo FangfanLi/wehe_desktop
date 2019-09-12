@@ -14,7 +14,8 @@ RUN apk add --no-cache gcc \
 		libgfortran \
 		tcpdump \
 		wireshark \
-		tshark
+		tshark \
+		openssl
 RUN pip install --no-cache psutil
 RUN pip install --no-cache mysqlclient
 RUN pip install --no-cache tornado==4.2
@@ -33,4 +34,5 @@ RUN apk del --purge gcc \
 ADD src /wehe
 ADD replayTraces /replayTraces
 WORKDIR /wehe
-CMD python replay_analyzerServer.py --ConfigFile=configs.cfg --original_ports=True & python replay_server.py --ConfigFile=configs.cfg --original_ports=True
+RUN python certGenerator.py --root_cert=/wehe/ssl/ca.crt --root_key=/wehe/ssl/ca.key --destination=/wehe/ssl/ --root_pass=wehepower2HjBqmhqF4
+CMD python replay_analyzerServer.py --ConfigFile=configs.cfg --original_ports=True --certs-folders=/wehe/ssl/ & python replay_server.py --ConfigFile=configs.cfg --original_ports=True --certs-folders=/wehe/ssl/
