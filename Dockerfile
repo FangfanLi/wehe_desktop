@@ -1,3 +1,5 @@
+# This image is intended to be run with the appropriate certs mounted in
+# /wehe/ssl.
 FROM python:2.7-alpine
 MAINTAINER Fangfan Li <li.fa@husky.neu.edu>, Harsh Modi <modi.ha@husky.neu.edu>
 RUN pip install --upgrade pip
@@ -34,5 +36,5 @@ RUN apk del --purge gcc \
 ADD src /wehe
 ADD replayTraces /replayTraces
 WORKDIR /wehe
-RUN python certGenerator.py --root_cert=/wehe/ssl/ca.crt --root_key=/wehe/ssl/ca.key --destination=/wehe/ssl/ --root_pass=wehepower2HjBqmhqF4
-CMD python replay_analyzerServer.py --ConfigFile=configs.cfg --original_ports=True --certs-folders=/wehe/ssl/ & python replay_server.py --ConfigFile=configs.cfg --original_ports=True --certs-folders=/wehe/ssl/
+# You must provide a local hostname argument when you start this image.
+ENTRYPOINT ["/bin/sh", "./startserver.sh"]
