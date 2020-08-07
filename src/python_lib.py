@@ -562,7 +562,10 @@ class Instance(object):
                     'local'               : 'localhost',
                    }
     def getIP(self, machineName):
-        ip = socket.gethostbyname( self.ips[machineName] )
+        try:
+            ip = socket.gethostbyname( self.ips[machineName] )
+        except KeyError:
+            ip = socket.gethostbyname( machineName )
         return ip
 # Get current cpu load, memory usage, disk usage and upload bandwidth usage
 def getSystemStat():
